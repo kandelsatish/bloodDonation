@@ -1,21 +1,46 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { Component } from 'react';
+import { NavigationContainer } from '@react-navigation/native'
+import firebase from 'firebase'
+import { firebaseConfig } from './src/configs'
+import { AuthenticationStack } from './src/navigation/Navigation'
+import { AuthenticatedStack } from './src/navigation/Navigation'
+import Spinner from './src/components/Spinner';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+export default class App extends Component {
+  state = { loggedIn: null }
+  constructor() {
+    super();
+    firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({ loggedIn: true });
+      }
+      else {
+        this.setState({ loggedIn: false });
+      }
+    });
+  }
+
+  renderContaint = () => {
+    switch (this.state.loggedIn) {
+      case true:
+        return <AuthenticatedStack />
+      case false:
+        return <AuthenticationStack />
+      default:
+        return <Spinner />
+
+    }
+  }
+
+  render() {
+    return (
+      <NavigationContainer>
+        {this.renderContaint()}
+      </NavigationContainer>
+    )
+  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+
